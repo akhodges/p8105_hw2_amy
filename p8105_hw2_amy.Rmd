@@ -1,0 +1,335 @@
+---
+title: 'Data Science: Homework 2'
+author: "Amy Hodges"
+date: "2026-10-13"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(janitor)
+library(readxl)
+```
+
+**NYC SUBWAY**
+```{r}
+# Calling the data
+hw2_nyc_raw <- read.csv("nyc_subway_data.csv")
+
+# Cleaning variable names
+hw2_nyc_clean_names <- janitor::clean_names(hw2_nyc_raw)
+
+# Retaining the desired variables
+hw2_nyc_clean <- select(hw2_nyc_clean_names, line, station_name, station_latitude, station_longitude, route1:route11, entry, vending, entrance_type, ada)
+
+# Changing entry from character to logical variable
+library(dplyr)
+hw2_nyc_clean <- hw2_nyc_clean %>%
+  mutate(
+    entry = case_match(
+      entry,
+      "YES" ~ TRUE,
+      "NO" ~ FALSE,
+      .default = NA
+    )
+  )
+
+# Checking number of rows and columns
+nrow(hw2_nyc_clean)
+ncol(hw2_nyc_clean)
+```
+
+This dataset contains information about NYC subway entrances and exits, including subway line, station name, geographic coordinates, routes served, entrance type, ADA compliance, entry availability, and vending availability. To begin cleaning this data, I first created a new data frame containing only the desired variables, then converted the Entry column from a character variable (YES/NO) to a logical variable (TRUE/FALSE). The resulting dataset includes 19 columns and 1868 rows. The data are not fully tidy because the route names and numbers are currently spread across multiple columns.
+
+```{r}
+# How many distinct stations are there?
+hw2_nyc_clean %>%
+  distinct(line, station_name) %>%
+  nrow()
+
+# How many stations are ADA compliant?
+hw2_nyc_clean %>%
+  filter(ada == "TRUE") %>%
+  distinct(line, station_name) %>%
+  nrow()
+
+# Proportion of entrances with entry and no vending
+entry_no_vending <- 
+  hw2_nyc_clean %>%
+  filter(entry == TRUE, vending == "NO") %>%
+  nrow()
+
+no_vending <- 
+  hw2_nyc_clean %>%
+  filter(vending == "NO") %>%
+  nrow()
+
+entry_no_vending_proportion <- entry_no_vending/no_vending
+entry_no_vending_proportion
+```
+
+There are 465 distinct stations in this dataset.
+There are 84 stations that are ADA compliant in this dataset.
+Of the entrances allowing entry, 37.7% do not offer vending.
+
+```{r}
+# Separating route name and number
+hw2_nyc_clean <- hw2_nyc_clean %>%
+  mutate(across(route1:route11, as.character)) %>%
+  pivot_longer(
+    cols = route1:route11,
+    names_to = "route_number",
+    names_prefix = "route",
+    values_to = "route_name"
+  )
+
+# How many distinct stations serve the A train?
+distinct_a_train <- hw2_nyc_clean %>%
+  filter(route_name == "A") %>%
+  distinct(line, station_name) %>%
+  nrow()
+
+distinct_a_train
+
+# Of the A train stations, how many are ADA compliant?
+distinct_a_train_ada <- hw2_nyc_clean %>%
+  filter(route_name == "A", ada == "TRUE") %>%
+  distinct(line, station_name) %>%
+  nrow()
+
+distinct_a_train_ada
+```
+
+There are 60 distinct stations that serve the A train.
+Of these stations serving the A train, 17 are ADA compliant.
+
+
+**MR. TRASH  WHEEL**
+```{r}
+# Calling Mr. Trash Wheel sheet
+hw2_mrtrashwheel_raw <- read_excel("trash_wheel_data.xlsx", sheet = "Mr. Trash Wheel", skip = 1)
+
+# Fixing variable names
+hw2_mrtrashwheel_clean <- janitor::clean_names(hw2_mrtrashwheel_raw)
+
+# Removing non-data entries
+hw2_mrtrashwheel_clean <- select(hw2_mrtrashwheel_clean, -x15, -x16)
+
+hw2_mrtrashwheel_clean <- hw2_mrtrashwheel_clean %>%
+  filter(!is.na(dumpster))
+
+# Rounding number of sports balls
+hw2_mrtrashwheel_clean <- hw2_mrtrashwheel_clean %>%
+  mutate(
+    sports_balls = as.integer(sports_balls)
+  )
+
+# Calling Prof Trash Wheel sheet
+hw2_proftrashwheel_raw <- read_excel("trash_wheel_data.xlsx", sheet = "Professor Trash Wheel", skip = 1)
+
+# Fixing variable names
+hw2_proftrashwheel_clean <- janitor::clean_names(hw2_proftrashwheel_raw)
+
+# Removing non-data entries
+hw2_proftrashwheel_clean <- hw2_proftrashwheel_clean %>%
+  filter(!is.na(dumpster))
+
+# Calling Gwynnda sheet
+hw2_gwynnda_raw <- read_excel("trash_wheel_data.xlsx", sheet = "Gwynnda the Good Wheel of the W", skip = 1)
+
+# Fixing variable names
+hw2_gwynnda_clean <- janitor::clean_names(hw2_gwynnda_raw)
+
+# Removing non-data entries
+hw2_gwynnda_clean <- hw2_gwynnda_clean %>%
+  filter(!is.na(dumpster))
+
+# Adding a trash wheel variable to each sheet
+hw2_mrtrashwheel_clean <- hw2_mrtrashwheel_clean %>%
+  mutate(trash_wheel = "mister")
+
+hw2_proftrashwheel_clean <- hw2_proftrashwheel_clean %>%
+  mutate(trash_wheel = "professor")
+
+hw2_gwynnda_clean <- hw2_gwynnda_clean %>%
+  mutate(trash_wheel = "gwynnda")
+
+# Matching variable types before combining
+hw2_proftrashwheel_clean <- hw2_proftrashwheel_clean %>%
+  mutate(plastic_bottles = as.numeric(plastic_bottles))
+
+hw2_mrtrashwheel_clean <- hw2_mrtrashwheel_clean %>%
+  mutate(year = as.numeric(year))
+
+# Combining all three sheets
+hw2_trash_wheels_combined <- bind_rows(
+  hw2_mrtrashwheel_clean,
+  hw2_proftrashwheel_clean,
+  hw2_gwynnda_clean
+)
+
+# Total number of observations in combined dataset
+total_obs_trashwheels <- nrow(hw2_trash_wheels_combined)
+total_obs_trashwheels
+
+# Total weight of trash collected by Professor Trash Wheel
+total_weight_prof_trash <- 
+  hw2_trash_wheels_combined %>%
+  filter(trash_wheel == "professor") %>%
+  pull(weight_tons) %>%
+  sum()
+total_weight_prof_trash
+
+# Number of cigarette butts collected by Gwynnda in June 2022
+gwynnda_cigs_june_2022 <-
+  hw2_trash_wheels_combined %>%
+  filter(trash_wheel == "gwynnda", month == "June", year == 2022) %>%
+  pull(cigarette_butts) %>%
+  sum()
+gwynnda_cigs_june_2022
+```
+This dataset features data from three trash wheels, such as total weight and volume of trash collected, amounts of various types of trash collected, and dates of collection. This dataset includes a total of 1269 observations. 
+
+The total weight of trash collected by Professor Trash Wheel in this dataset is 294.96 tons.
+
+Gwynnda collected 18,120 cigarette butts in June of 2022. 
+
+
+**ALZHEIMER'S DISEASE**
+```{r}
+# Calling the data
+hw2_alz_baseline_raw <- read.csv("mci_baseline.csv", skip = 1)
+
+# Cleaning variable names
+hw2_alz_baseline_clean <- janitor::clean_names(hw2_alz_baseline_raw)
+
+# Renaming variables
+hw2_alz_baseline_clean <- hw2_alz_baseline_clean %>%
+  rename(age_baseline = current_age,
+         apoe4_carrier = apoe4,
+         age_onset = age_at_onset)
+
+# Replacing periods with NA
+hw2_alz_baseline_clean <- hw2_alz_baseline_clean %>%
+  mutate(
+    age_onset = na_if(age_onset, ".")
+  )
+
+# Changing 0/1 variables to character
+hw2_alz_baseline_clean <- hw2_alz_baseline_clean %>%
+  mutate(
+    sex = case_match(
+      sex,
+      1 ~ "male",
+      0 ~ "female"),
+    apoe4_carrier = case_match(
+      apoe4_carrier,
+      1 ~ "carrier",
+      0 ~ "noncarrier")
+  )
+
+# Removing participants with no MCI at baseline
+hw2_alz_baseline_mci_only <- hw2_alz_baseline_clean %>%
+  filter(!is.na(age_onset))
+```
+
+This dataset houses information about participants in a study regarding development of Alzheimer's disease, including data such as demographic information, age of MCI onset, and APOE4 carrier status. Upon importing this dataset, it was important to clean up the variable names, rename them to be more succinct, remove the header observation row, change values encoded as 0/1 (sex and APOE4 carrier status) to character variables, and remove participants who did not develop MCI.
+
+```{r}
+# Number of recruited participants that develop MCI?
+number_participants_total <- nrow(hw2_alz_baseline_clean)
+number_participants_total
+
+number_participants_mci <- nrow(hw2_alz_baseline_mci_only)
+number_participants_mci
+
+# Average baseline age
+hw2_alz_baseline_clean <- hw2_alz_baseline_clean %>%
+  mutate(age_baseline = as.numeric(age_baseline))
+
+avg_baseline_age <- mean(hw2_alz_baseline_clean$age_baseline, na.rm = TRUE)
+avg_baseline_age
+
+# Percentage of women that are APOE4 carriers
+women_total_alz_study <- hw2_alz_baseline_clean %>%
+  filter(sex == "female") %>%
+  nrow()
+
+women_apoe4_carrier <- hw2_alz_baseline_clean %>%
+  filter(sex == "female", apoe4_carrier == "carrier") %>%
+  nrow()
+
+prop_women_apoe4_carrier <- women_apoe4_carrier/women_total_alz_study
+prop_women_apoe4_carrier
+```
+
+A total of 483 participants were recruited, of which 97 developed MCI.
+The average baseline age is 65 years old.
+Of women in the study, 29.8% are APOE4 carriers.
+
+```{r}
+# Calling the data
+hw2_alz_biomarkers_raw <- read.csv("mci_amyloid.csv", skip = 1)
+
+# Cleaning variable names
+hw2_alz_biomarkers_clean <- janitor::clean_names(hw2_alz_biomarkers_raw)
+
+nrow(hw2_alz_biomarkers_clean)
+ncol(hw2_alz_biomarkers_clean)
+
+# Converting variables to numeric
+hw2_alz_biomarkers_clean <- hw2_alz_biomarkers_clean %>%
+  mutate(
+    across(
+      c(baseline, time_2, time_4, time_6, time_8),
+      as.numeric
+    )
+  )
+```
+This dataset contains information on longitudinal biomarker values, with 6 variables and 487 observations. Biomarker values are reported at baseline and four timepoints. To clean this dataset, I removed the repetitive header row, converted variable names to snake case, and converted biomarker values from character to to numeric. 
+
+```{r}
+# Matching ID variable names
+hw2_alz_biomarkers_clean <- hw2_alz_biomarkers_clean %>%
+  rename(id = study_id)
+
+# Finding participants only in the baseline dataset
+hw2_baseline_only <- anti_join(
+  hw2_alz_baseline_clean,
+  hw2_alz_biomarkers_clean,
+  by = "id"
+)
+
+nrow(hw2_baseline_only)
+
+# Finding participants only in the amyloid dataset
+hw2_amyloid_only <- anti_join(
+  hw2_alz_biomarkers_clean,
+  hw2_alz_baseline_clean,
+  by = "id"
+)
+
+nrow(hw2_amyloid_only)
+
+# Combining the datasets
+hw2_alz_combined <- inner_join(
+  hw2_alz_baseline_clean,
+  hw2_alz_biomarkers_clean,
+  by = "id"
+)
+
+nrow(hw2_alz_combined)
+ncol(hw2_alz_combined)
+```
+There are 8 participants who only appear in the baseline group, and 12 participants who only appear in the amyloid group. The combined dataset includes only participants who have baseline and amyloid biomarker data. This combined dataset includes 11 variables and 475 observations, providing information on participants' baseline characteristics and biomarker values over time. 
+
+```{r}
+# Exporting the dataset as CSV
+write.csv(
+  hw2_alz_combined,
+  "hw2_alz_combined.csv",
+  row.names = FALSE
+)
+```
