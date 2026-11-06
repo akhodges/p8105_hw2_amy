@@ -7,7 +7,7 @@ Amy Hodges
 
 ``` r
 # Calling the data
-hw2_nyc_raw <- read.csv("nyc_subway_data.csv")
+hw2_nyc_raw <- read.csv("data/nyc_subway_data.csv")
 
 # Cleaning variable names
 hw2_nyc_clean_names <- janitor::clean_names(hw2_nyc_raw)
@@ -87,8 +87,8 @@ entry_no_vending_proportion
     ## [1] 0.3770492
 
 There are 465 distinct stations in this dataset. There are 84 stations
-that are ADA compliant in this dataset. Of the entrances allowing entry,
-37.7% do not offer vending.
+that are ADA compliant in this dataset. Of the entrances without
+vending, 37.7% allow entry.
 
 ``` r
 # Separating route name and number
@@ -131,7 +131,7 @@ serving the A train, 17 are ADA compliant.
 
 ``` r
 # Calling Mr. Trash Wheel sheet
-hw2_mrtrashwheel_raw <- read_excel("trash_wheel_data.xlsx", sheet = "Mr. Trash Wheel", skip = 1)
+hw2_mrtrashwheel_raw <- read_excel("data/trash_wheel_data.xlsx", sheet = "Mr. Trash Wheel", skip = 1)
 ```
 
     ## New names:
@@ -155,7 +155,7 @@ hw2_mrtrashwheel_clean <- hw2_mrtrashwheel_clean %>%
   )
 
 # Calling Prof Trash Wheel sheet
-hw2_proftrashwheel_raw <- read_excel("trash_wheel_data.xlsx", sheet = "Professor Trash Wheel", skip = 1)
+hw2_proftrashwheel_raw <- read_excel("data/trash_wheel_data.xlsx", sheet = "Professor Trash Wheel", skip = 1)
 
 # Fixing variable names
 hw2_proftrashwheel_clean <- janitor::clean_names(hw2_proftrashwheel_raw)
@@ -165,7 +165,7 @@ hw2_proftrashwheel_clean <- hw2_proftrashwheel_clean %>%
   filter(!is.na(dumpster))
 
 # Calling Gwynnda sheet
-hw2_gwynnda_raw <- read_excel("trash_wheel_data.xlsx", sheet = "Gwynnda the Good Wheel of the W", skip = 1)
+hw2_gwynnda_raw <- read_excel("data/trash_wheel_data.xlsx", sheet = "Gwynnda the Good Wheel of the W", skip = 1)
 
 # Fixing variable names
 hw2_gwynnda_clean <- janitor::clean_names(hw2_gwynnda_raw)
@@ -187,14 +187,7 @@ hw2_gwynnda_clean <- hw2_gwynnda_clean %>%
 # Matching variable types before combining
 hw2_proftrashwheel_clean <- hw2_proftrashwheel_clean %>%
   mutate(plastic_bottles = as.numeric(plastic_bottles))
-```
 
-    ## Warning: There was 1 warning in `mutate()`.
-    ## ℹ In argument: `plastic_bottles = as.numeric(plastic_bottles)`.
-    ## Caused by warning:
-    ## ! NAs introduced by coercion
-
-``` r
 hw2_mrtrashwheel_clean <- hw2_mrtrashwheel_clean %>%
   mutate(year = as.numeric(year))
 
@@ -250,7 +243,7 @@ Gwynnda collected 18,120 cigarette butts in June of 2022.
 
 ``` r
 # Calling the data
-hw2_alz_baseline_raw <- read.csv("mci_baseline.csv", skip = 1)
+hw2_alz_baseline_raw <- read.csv("data/mci_baseline.csv", skip = 1)
 
 # Cleaning variable names
 hw2_alz_baseline_clean <- janitor::clean_names(hw2_alz_baseline_raw)
@@ -341,7 +334,7 @@ are APOE4 carriers.
 
 ``` r
 # Calling the data
-hw2_alz_biomarkers_raw <- read.csv("mci_amyloid.csv", skip = 1)
+hw2_alz_biomarkers_raw <- read.csv("data/mci_amyloid.csv", skip = 1)
 
 # Cleaning variable names
 hw2_alz_biomarkers_clean <- janitor::clean_names(hw2_alz_biomarkers_raw)
@@ -367,14 +360,6 @@ hw2_alz_biomarkers_clean <- hw2_alz_biomarkers_clean %>%
     )
   )
 ```
-
-    ## Warning: There were 5 warnings in `mutate()`.
-    ## The first warning was:
-    ## ℹ In argument: `across(c(baseline, time_2, time_4, time_6, time_8),
-    ##   as.numeric)`.
-    ## Caused by warning:
-    ## ! NAs introduced by coercion
-    ## ℹ Run `dplyr::last_dplyr_warnings()` to see the 4 remaining warnings.
 
 This dataset contains information on longitudinal biomarker values, with
 6 variables and 487 observations. Biomarker values are reported at
@@ -442,7 +427,7 @@ biomarker values over time.
 # Exporting the dataset as CSV
 write.csv(
   hw2_alz_combined,
-  "hw2_alz_combined.csv",
+  "data/hw2_alz_combined.csv",
   row.names = FALSE
 )
 ```

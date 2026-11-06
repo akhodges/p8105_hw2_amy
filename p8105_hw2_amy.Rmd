@@ -16,7 +16,7 @@ library(readxl)
 **NYC SUBWAY**
 ```{r}
 # Calling the data
-hw2_nyc_raw <- read.csv("nyc_subway_data.csv")
+hw2_nyc_raw <- read.csv("data/nyc_subway_data.csv")
 
 # Cleaning variable names
 hw2_nyc_clean_names <- janitor::clean_names(hw2_nyc_raw)
@@ -72,7 +72,7 @@ entry_no_vending_proportion
 
 There are 465 distinct stations in this dataset.
 There are 84 stations that are ADA compliant in this dataset.
-Of the entrances allowing entry, 37.7% do not offer vending.
+Of the entrances without vending, 37.7% allow entry.
 
 ```{r}
 # Separating route name and number
@@ -107,9 +107,9 @@ Of these stations serving the A train, 17 are ADA compliant.
 
 
 **MR. TRASH  WHEEL**
-```{r}
+```{r, warning = FALSE}
 # Calling Mr. Trash Wheel sheet
-hw2_mrtrashwheel_raw <- read_excel("trash_wheel_data.xlsx", sheet = "Mr. Trash Wheel", skip = 1)
+hw2_mrtrashwheel_raw <- read_excel("data/trash_wheel_data.xlsx", sheet = "Mr. Trash Wheel", skip = 1)
 
 # Fixing variable names
 hw2_mrtrashwheel_clean <- janitor::clean_names(hw2_mrtrashwheel_raw)
@@ -127,7 +127,7 @@ hw2_mrtrashwheel_clean <- hw2_mrtrashwheel_clean %>%
   )
 
 # Calling Prof Trash Wheel sheet
-hw2_proftrashwheel_raw <- read_excel("trash_wheel_data.xlsx", sheet = "Professor Trash Wheel", skip = 1)
+hw2_proftrashwheel_raw <- read_excel("data/trash_wheel_data.xlsx", sheet = "Professor Trash Wheel", skip = 1)
 
 # Fixing variable names
 hw2_proftrashwheel_clean <- janitor::clean_names(hw2_proftrashwheel_raw)
@@ -137,7 +137,7 @@ hw2_proftrashwheel_clean <- hw2_proftrashwheel_clean %>%
   filter(!is.na(dumpster))
 
 # Calling Gwynnda sheet
-hw2_gwynnda_raw <- read_excel("trash_wheel_data.xlsx", sheet = "Gwynnda the Good Wheel of the W", skip = 1)
+hw2_gwynnda_raw <- read_excel("data/trash_wheel_data.xlsx", sheet = "Gwynnda the Good Wheel of the W", skip = 1)
 
 # Fixing variable names
 hw2_gwynnda_clean <- janitor::clean_names(hw2_gwynnda_raw)
@@ -198,9 +198,9 @@ Gwynnda collected 18,120 cigarette butts in June of 2022.
 
 
 **ALZHEIMER'S DISEASE**
-```{r}
+```{r, warning = FALSE}
 # Calling the data
-hw2_alz_baseline_raw <- read.csv("mci_baseline.csv", skip = 1)
+hw2_alz_baseline_raw <- read.csv("data/mci_baseline.csv", skip = 1)
 
 # Cleaning variable names
 hw2_alz_baseline_clean <- janitor::clean_names(hw2_alz_baseline_raw)
@@ -237,7 +237,7 @@ hw2_alz_baseline_mci_only <- hw2_alz_baseline_clean %>%
 
 This dataset houses information about participants in a study regarding development of Alzheimer's disease, including data such as demographic information, age of MCI onset, and APOE4 carrier status. Upon importing this dataset, it was important to clean up the variable names, rename them to be more succinct, remove the header observation row, change values encoded as 0/1 (sex and APOE4 carrier status) to character variables, and remove participants who did not develop MCI.
 
-```{r}
+```{r, warning = FALSE}
 # Number of recruited participants that develop MCI?
 number_participants_total <- nrow(hw2_alz_baseline_clean)
 number_participants_total
@@ -269,9 +269,9 @@ A total of 483 participants were recruited, of which 97 developed MCI.
 The average baseline age is 65 years old.
 Of women in the study, 29.8% are APOE4 carriers.
 
-```{r}
+```{r, warning = FALSE}
 # Calling the data
-hw2_alz_biomarkers_raw <- read.csv("mci_amyloid.csv", skip = 1)
+hw2_alz_biomarkers_raw <- read.csv("data/mci_amyloid.csv", skip = 1)
 
 # Cleaning variable names
 hw2_alz_biomarkers_clean <- janitor::clean_names(hw2_alz_biomarkers_raw)
@@ -290,7 +290,7 @@ hw2_alz_biomarkers_clean <- hw2_alz_biomarkers_clean %>%
 ```
 This dataset contains information on longitudinal biomarker values, with 6 variables and 487 observations. Biomarker values are reported at baseline and four timepoints. To clean this dataset, I removed the repetitive header row, converted variable names to snake case, and converted biomarker values from character to to numeric. 
 
-```{r}
+```{r, warning = FALSE}
 # Matching ID variable names
 hw2_alz_biomarkers_clean <- hw2_alz_biomarkers_clean %>%
   rename(id = study_id)
@@ -325,11 +325,11 @@ ncol(hw2_alz_combined)
 ```
 There are 8 participants who only appear in the baseline group, and 12 participants who only appear in the amyloid group. The combined dataset includes only participants who have baseline and amyloid biomarker data. This combined dataset includes 11 variables and 475 observations, providing information on participants' baseline characteristics and biomarker values over time. 
 
-```{r}
+```{r, warning = FALSE}
 # Exporting the dataset as CSV
 write.csv(
   hw2_alz_combined,
-  "hw2_alz_combined.csv",
+  "data/hw2_alz_combined.csv",
   row.names = FALSE
 )
 ```
